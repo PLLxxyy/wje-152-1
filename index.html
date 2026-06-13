@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>数码回收估价 - 二手数码设备回收</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+        background: #f5f7fa;
+        color: #333;
+        min-height: 100vh;
+      }
+      #root { min-height: 100vh; display: flex; flex-direction: column; }
+
+      /* Layout */
+      .app-container { max-width: 480px; margin: 0 auto; min-height: 100vh; background: #fff; display: flex; flex-direction: column; width: 100%; }
+      .app-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #fff;
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+      .app-header h1 { font-size: 18px; font-weight: 600; }
+      .back-btn {
+        background: rgba(255,255,255,0.2);
+        border: none;
+        color: #fff;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .back-btn:hover { background: rgba(255,255,255,0.3); }
+      .app-content { flex: 1; padding: 20px; overflow-y: auto; }
+      .app-footer {
+        background: #fff;
+        border-top: 1px solid #eee;
+        display: flex;
+        position: sticky;
+        bottom: 0;
+      }
+      .footer-tab {
+        flex: 1;
+        padding: 10px 0;
+        text-align: center;
+        cursor: pointer;
+        border: none;
+        background: none;
+        font-size: 12px;
+        color: #999;
+        transition: color 0.2s;
+      }
+      .footer-tab.active { color: #667eea; }
+      .footer-tab .tab-icon { font-size: 20px; display: block; margin-bottom: 2px; }
+
+      /* Buttons */
+      .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #fff;
+        border: none;
+        padding: 14px 24px;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%;
+        transition: opacity 0.2s;
+      }
+      .btn-primary:hover { opacity: 0.9; }
+      .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+      .btn-secondary {
+        background: #f0f0f0;
+        color: #333;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 12px;
+        font-size: 14px;
+        cursor: pointer;
+        width: 100%;
+      }
+
+      /* Home */
+      .hot-section { margin-bottom: 24px; }
+      .hot-section h2 { font-size: 18px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+      .hot-list { display: flex; flex-direction: column; gap: 10px; }
+      .hot-item {
+        display: flex;
+        align-items: center;
+        padding: 14px 16px;
+        background: #f9fafb;
+        border-radius: 12px;
+        gap: 14px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .hot-item:hover { background: #f0f1f5; }
+      .hot-rank {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 700;
+        color: #fff;
+        flex-shrink: 0;
+      }
+      .hot-rank-1 { background: #ff6b6b; }
+      .hot-rank-2 { background: #ffa94d; }
+      .hot-rank-3 { background: #ffd43b; color: #333; }
+      .hot-rank-n { background: #dee2e6; color: #666; }
+      .hot-info { flex: 1; }
+      .hot-name { font-size: 15px; font-weight: 500; }
+      .hot-brand { font-size: 12px; color: #999; margin-top: 2px; }
+      .hot-price { font-size: 16px; font-weight: 700; color: #ff6b6b; white-space: nowrap; }
+
+      /* Category / Brand / Model selection */
+      .category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+      .category-card {
+        background: #f9fafb;
+        border: 2px solid transparent;
+        border-radius: 14px;
+        padding: 20px 12px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .category-card:hover { border-color: #667eea; }
+      .category-card.selected { border-color: #667eea; background: #f0f0ff; }
+      .category-icon { font-size: 32px; margin-bottom: 8px; }
+      .category-name { font-size: 14px; font-weight: 500; }
+
+      .brand-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 24px; }
+      .brand-card {
+        background: #f9fafb;
+        border: 2px solid transparent;
+        border-radius: 12px;
+        padding: 16px 8px;
+        text-align: center;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s;
+      }
+      .brand-card:hover { border-color: #667eea; }
+      .brand-card.selected { border-color: #667eea; background: #f0f0ff; }
+
+      .model-list { display: flex; flex-direction: column; gap: 10px; }
+      .model-card {
+        display: flex;
+        align-items: center;
+        padding: 16px;
+        background: #f9fafb;
+        border: 2px solid transparent;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        gap: 12px;
+      }
+      .model-card:hover { border-color: #667eea; }
+      .model-card.selected { border-color: #667eea; background: #f0f0ff; }
+      .model-name { font-size: 15px; font-weight: 500; }
+      .model-price { font-size: 13px; color: #999; margin-top: 2px; }
+      .model-specs { font-size: 12px; color: #bbb; margin-top: 2px; }
+
+      /* Condition Check */
+      .condition-group { margin-bottom: 20px; }
+      .condition-label {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .condition-options { display: flex; flex-direction: column; gap: 8px; }
+      .condition-option {
+        display: flex;
+        align-items: center;
+        padding: 14px 16px;
+        background: #f9fafb;
+        border: 2px solid transparent;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        gap: 10px;
+      }
+      .condition-option:hover { border-color: #667eea; }
+      .condition-option.selected { border-color: #667eea; background: #f0f0ff; }
+      .condition-option .radio {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid #ddd;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .condition-option.selected .radio { border-color: #667eea; }
+      .condition-option.selected .radio::after {
+        content: '';
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #667eea;
+      }
+      .option-text { font-size: 14px; }
+      .option-desc { font-size: 12px; color: #999; margin-top: 2px; }
+      .option-discount { margin-left: auto; font-size: 12px; color: #ff6b6b; font-weight: 600; white-space: nowrap; }
+
+      /* Price Result */
+      .price-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 16px;
+        padding: 28px 24px;
+        color: #fff;
+        text-align: center;
+        margin-bottom: 24px;
+      }
+      .price-label { font-size: 14px; opacity: 0.8; margin-bottom: 8px; }
+      .price-range { font-size: 36px; font-weight: 700; }
+      .price-range span { font-size: 16px; font-weight: 400; opacity: 0.8; }
+      .price-basis { font-size: 13px; opacity: 0.7; margin-top: 12px; }
+      .detail-section { margin-bottom: 20px; }
+      .detail-section h3 { font-size: 16px; font-weight: 600; margin-bottom: 12px; }
+      .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 14px;
+      }
+      .detail-key { color: #666; }
+      .detail-val { font-weight: 500; }
+
+      /* Submit Order */
+      .form-group { margin-bottom: 18px; }
+      .form-label { font-size: 14px; font-weight: 500; margin-bottom: 6px; display: block; color: #555; }
+      .form-input {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        font-size: 15px;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      .form-input:focus { border-color: #667eea; }
+      .form-input::placeholder { color: #ccc; }
+      textarea.form-input { resize: vertical; min-height: 80px; font-family: inherit; }
+
+      /* Order List */
+      .order-card {
+        background: #f9fafb;
+        border-radius: 14px;
+        padding: 16px;
+        margin-bottom: 12px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .order-card:hover { background: #f0f1f5; }
+      .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+      .order-device { font-size: 15px; font-weight: 600; }
+      .order-status {
+        font-size: 12px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-weight: 500;
+      }
+      .status-pending { background: #fff3e0; color: #ef6c00; }
+      .status-checking { background: #e3f2fd; color: #1565c0; }
+      .status-paid { background: #e8f5e9; color: #2e7d32; }
+      .order-price { font-size: 18px; font-weight: 700; color: #ff6b6b; }
+      .order-date { font-size: 12px; color: #999; margin-top: 4px; }
+      .order-detail { font-size: 13px; color: #666; margin-top: 8px; }
+
+      /* Order Detail Modal */
+      .modal-overlay {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 200;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+      }
+      .modal-content {
+        background: #fff;
+        border-radius: 16px 16px 0 0;
+        width: 100%;
+        max-width: 480px;
+        max-height: 85vh;
+        overflow-y: auto;
+        padding: 24px 20px 40px;
+      }
+      .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+      .modal-header h2 { font-size: 18px; }
+      .modal-close {
+        background: #f0f0f0;
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        font-size: 18px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* Section title */
+      .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 16px;
+      }
+      .section-subtitle {
+        font-size: 13px;
+        color: #999;
+        margin-bottom: 20px;
+      }
+
+      /* Empty state */
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #ccc;
+      }
+      .empty-state .empty-icon { font-size: 48px; margin-bottom: 16px; }
+      .empty-state p { font-size: 14px; }
+
+      /* Tip */
+      .tip-bar {
+        background: #fffbe6;
+        border: 1px solid #ffe58f;
+        border-radius: 10px;
+        padding: 12px 14px;
+        font-size: 13px;
+        color: #ad6800;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      /* Success */
+      .success-page { text-align: center; padding: 40px 20px; }
+      .success-icon { font-size: 64px; margin-bottom: 16px; }
+      .success-title { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+      .success-desc { font-size: 14px; color: #999; margin-bottom: 30px; }
+
+      /* Animations */
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+      .fade-in { animation: fadeIn 0.3s ease; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
