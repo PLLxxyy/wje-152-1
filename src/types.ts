@@ -68,6 +68,7 @@ export interface RecycleOrder {
   pickupTime: string;
   status: OrderStatus;
   createdAt: string;
+  starred?: boolean;
   inspectNote?: string;
   finalPrice?: number;
 }

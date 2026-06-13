@@ -38,3 +38,12 @@ export function updateOrderStatus(orderId: string, status: RecycleOrder['status'
     saveOrders(orders);
   }
 }
+
+export function toggleStar(orderId: string): void {
+  const orders = getOrders();
+  const idx = orders.findIndex(o => o.id === orderId);
+  if (idx >= 0) {
+    orders[idx].starred = !orders[idx].starred;
+    saveOrders(orders);
+  }
+}

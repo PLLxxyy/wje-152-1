@@ -3,6 +3,7 @@
 // ============================================================
 import React from 'react';
 import { devices } from '../data/devices';
+import { getOrders } from '../utils/storage';
 
 interface Props {
   onSelectDevice: (deviceId: string) => void;
@@ -14,6 +15,10 @@ const Home: React.FC<Props> = ({ onSelectDevice, onGoSelect }) => {
   const hotDevices = [...devices]
     .sort((a, b) => b.basePrice - a.basePrice)
     .slice(0, 10);
+
+  const starredOrders = getOrders()
+    .filter(o => o.starred)
+    .slice(0, 5);
 
   const getRankClass = (index: number): string => {
     if (index === 0) return 'hot-rank hot-rank-1';
@@ -57,6 +62,28 @@ const Home: React.FC<Props> = ({ onSelectDevice, onGoSelect }) => {
         <span>💡</span>
         <span>以上为完美成色预估回收价，实际价格取决于设备成色状况。</span>
       </div>
+
+      {starredOrders.length > 0 && (
+        <div className="hot-section">
+          <h2>⭐ 我关注的订单</h2>
+          <div className="hot-list">
+            {starredOrders.map(order => (
+              <div key={order.id} className="hot-item">
+                <div className="hot-rank hot-rank-star">★</div>
+                <div className="hot-info">
+                  <div className="hot-name">{order.device.brand} {order.device.model}</div>
+                  <div className="hot-brand">{order.status}</div>
+                </div>
+                <div className="hot-price">
+                  {order.finalPrice
+                    ? `¥${order.finalPrice}`
+                    : `¥${order.priceResult.finalPriceLow}~${order.priceResult.finalPriceHigh}`}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

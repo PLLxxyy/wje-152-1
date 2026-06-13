@@ -3,7 +3,7 @@
 // ============================================================
 import React, { useState, useEffect } from 'react';
 import { RecycleOrder } from '../types';
-import { getOrders } from '../utils/storage';
+import { getOrders, toggleStar } from '../utils/storage';
 
 const statusMap: Record<string, { label: string; className: string }> = {
   '待取件': { label: '待取件', className: 'status-pending' },
@@ -24,6 +24,18 @@ const MyOrders: React.FC = () => {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
   };
 
+  const handleToggleStar = (orderId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleStar(orderId);
+    setOrders(getOrders());
+  };
+
+  const sortedOrders = [...orders].sort((a, b) => {
+    if (a.starred && !b.starred) return -1;
+    if (!a.starred && b.starred) return 1;
+    return 0;
+  });
+
   return (
     <div className="fade-in">
       <div className="section-title">我的回收</div>
@@ -35,16 +47,24 @@ const MyOrders: React.FC = () => {
         </div>
       ) : (
         <div>
-          {orders.map(order => {
+          {sortedOrders.map(order => {
             const statusInfo = statusMap[order.status];
             return (
               <div
                 key={order.id}
-                className="order-card"
+                className={`order-card${order.starred ? ' order-starred' : ''}`}
                 onClick={() => setSelectedOrder(order)}
               >
                 <div className="order-header">
-                  <div className="order-device">{order.device.brand} {order.device.model}</div>
+                  <div className="order-device">
+                    <button
+                      className={`star-btn${order.starred ? ' starred' : ''}`}
+                      onClick={e => handleToggleStar(order.id, e)}
+                    >
+                      {order.starred ? '★' : '☆'}
+                    </button>
+                    {order.device.brand} {order.device.model}
+                  </div>
                   <span className={`order-status ${statusInfo.className}`}>{statusInfo.label}</span>
                 </div>
                 <div className="order-price">
