@@ -44,6 +44,7 @@ export function toggleStar(orderId: string): void {
   const idx = orders.findIndex(o => o.id === orderId);
   if (idx >= 0) {
     orders[idx].starred = !orders[idx].starred;
+    orders[idx].starredAt = orders[idx].starred ? new Date().toISOString() : undefined;
     saveOrders(orders);
   }
 }

@@ -18,6 +18,7 @@ const Home: React.FC<Props> = ({ onSelectDevice, onGoSelect }) => {
 
   const starredOrders = getOrders()
     .filter(o => o.starred)
+    .sort((a, b) => (b.starredAt || '').localeCompare(a.starredAt || ''))
     .slice(0, 5);
 
   const getRankClass = (index: number): string => {
